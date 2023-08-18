@@ -1,0 +1,72 @@
+version: '3'
+
+includes:
+  frontend:
+    taskfile: ./frontend/Taskfile.yml
+    dir: ./frontend
+  backend:
+    taskfile: ./backend/Taskfile.yml
+    dir: ./backend
+  e2e:
+    taskfile: ./e2e/Taskfile.yml
+    dir: ./e2e
+
+silent: true
+
+
+tasks:
+  magic:
+    desc: verify that code is ready to push
+    cmds:
+      - task: frontend:verify
+      - task: backend:verify
+      - task: e2e
+      - task: kill
+
+  kill:
+    desc: kills BE and FE on their respective ports
+    cmds:
+      - task: backend:kill
+      - task: frontend:kill
+
+  run:
+    cmds:
+      - task: backend:run
+      - task: frontend:run
+
+  format:
+    desc: runs linter and prettier for frontend, backend and e2e
+    cmds:
+      - task: frontend:format
+      - task: e2e:format
+
+  e2e:
+    cmds:
+      - task: run
+      - task: e2e:verify
+      - task: kill
+
+  publish-docker-images:
+    cmds:
+      - task: backend:publish-docker-image
+      - task: frontend:publish-docker-image
+
+  install:
+    cmds:
+      - task: install-code-style
+      - task: frontend:install
+      - task: e2e:install
+
+  install-code-style:
+    cmds:
+      - mkdir -p .idea/
+      - cp -r configuration/idea/* .idea/
+
+  check-format:
+    desc: checks the format (and maybe lint in the future). Is mainly used by the Github action
+    cmds:
+      - task: frontend:check-format
+      - task: e2e:check-format
+
+  default:
+    cmds: [ task: magic ]

@@ -1,0 +1,51 @@
+version: 3
+
+silent: true
+
+tasks:
+  verify:
+    cmds:
+      - task: format
+      - task: test
+      - task: build
+      - task: package
+
+  test:
+    cmds: [npm run test]
+
+  format:
+    cmds: [npm run format]
+
+  install:
+    cmds: [npm ci]
+
+  build:
+    cmds: [npm run build]
+
+  package:
+    cmds:
+      [
+        docker buildx build --platform linux/arm64 -t file-sharing-frontend:development .,
+      ]
+
+  run_dev:
+    cmds:
+      - docker run -p 127.0.0.1:3000:3000 file-sharing-frontend:development
+
+  kill:
+    cmds: [ kill -9 "$(lsof -sTCP:LISTEN -ti tcp:4200)" ]
+    ignore_error: true
+
+  run:
+    cmds:
+      - task: kill
+      - mkdir -p ../log
+      - bash -ec 'nohup "npm" run start > ../log/frontend.log &'
+#      - ./wait-for-startup.sh
+
+  cypress:
+    cmds: [npm run cypress:run]
+
+  check-format:
+    cmds:
+      - npm run format-check

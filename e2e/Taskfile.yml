@@ -1,0 +1,15 @@
+version: "3"
+
+silent: true
+
+tasks:
+  install: npm ci
+  verify:
+    cmds:
+      - task: format
+      - task: run
+
+  format: npm run format
+  run: npm run cypress:run
+  check-format: npm run format-check
+  run-open: npm run cypress:open
